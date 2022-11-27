@@ -9,6 +9,12 @@ module.exports = {
                 .setName('name')
                 .setDescription('The name of the sleepover to end.')
                 .setRequired(false)
+        )
+        .addIntegerOption(option =>
+            option
+                .setName('timelimit')
+                .setDescription('The number of minutes to allow for current discussions to end before cleaning up.')
+                .setRequired(false)
         ),
 	async execute(interaction, sm) {
 		await interaction.reply({ content: `${interaction.options.getString('name') ?? 'sleepover'} is ending!`, ephemeral: true });

@@ -64,8 +64,8 @@ client.on(Events.VoiceStateUpdate, (oldState, newState) => {
     if (oldState.channelId !== newState.channelId) {
         let sleepovers = sm.getSleepovers(newState.guild.id);
 
-        if (sleepovers.length > 0) {
-            try {
+        try {
+            if (sleepovers.length > 0) {
                 sleepovers.forEach(s => {
                     if (newState.channelId === s.getLobbyChannel().id) {
                         s.createRoom(newState.member);
@@ -75,9 +75,9 @@ client.on(Events.VoiceStateUpdate, (oldState, newState) => {
                         oldState.channel.delete();
                     }
                 });
-            } catch (error) {
-                console.log(error);
             }
+        } catch (error) {
+            console.log(error);
         }
     }
 });

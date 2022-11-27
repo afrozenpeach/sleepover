@@ -10,6 +10,7 @@ module.exports = class Sleepover {
         this.overridePermissions = interaction.options.getBoolean('admins') ?? true;
         this.name = interaction.options.getString('name') ?? 'The Sleepover';
         this.announcement = interaction.options.getString('announcement') ?? `${this.name} has started!`;
+        this.closed = false;
 
         this.startSleepover(interaction);
     }
@@ -59,15 +60,19 @@ module.exports = class Sleepover {
     endSleepover(interaction) {
         let so = this;
 
-        this.guild.channels.delete(this.lobbyChannel, `${this.name} has ended!`).then(async () => {
+        so.closed = true;
+
+        let timelimit = interaction.options.getInteger('timelimit') ?? 0;
+
+        so.guild.channels.delete(so.lobbyChannel, `${so.name} has ended!`);
+
+        setTimeout(() => {
             so.sleepoverCategory.children.cache.forEach(async c => {
-                await c.delete(`${this.name} has ended!`)
+                await c.delete(`${so.name} has ended!`)
             });
 
-            so.guild.channels.delete(this.sleepoverCategory, `${this.name} has ended!`);
-        });
-
-        interaction.editReply(`${this.name} has ended!`);
+            so.guild.channels.delete(so.sleepoverCategory, `${so.name} has ended!`);
+        }, timelimit * 60 * 1000);
     }
 
     getLobbyChannel() {
@@ -95,6 +100,6 @@ module.exports = class Sleepover {
             c.permissionOverwrites.create(member, so.overridePermissions ? {'ManageChannels': true, 'MoveMembers': true, 'ManageRoles': true} : {});
 
             this.doghouseChannel.permissionOverwrites.create(member, so.overridePermissions ? {'MoveMembers': true} : {});
-        })
+        });
     }
 }
