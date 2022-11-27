@@ -57,14 +57,18 @@ client.on(Events.VoiceStateUpdate, (oldState, newState) => {
     let sleepovers = sm.getSleepovers(newState.guild.id);
 
     if (sleepovers.length > 0) {
-        sleepovers.forEach(s => {
-            if (newState.channelId === s.getLobbyChannel().id) {
-                s.createRoom(newState.member);
-            }
+        try {
+            sleepovers.forEach(s => {
+                if (newState.channelId === s.getLobbyChannel().id) {
+                    s.createRoom(newState.member);
+                }
 
-            if (oldState.channel?.permissionOverwrites.cache.filter(po => po.type === 1 && po.id === oldState.member.id).size > 0) {
-                oldState.channel.delete();
-            }
-        });
+                if (oldState.channel?.permissionOverwrites.cache.filter(po => po.type === 1 && po.id === oldState.member.id).size > 0) {
+                    oldState.channel.delete();
+                }
+            });
+        } catch (error) {
+            console.log(error);
+        }
     }
 });
