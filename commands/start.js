@@ -1,8 +1,9 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('start')
-		.setDescription('Starts the sleepover!'),
+		.setDescription('Starts the sleepover!')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
 	async execute(interaction, sm) {
         let channel = interaction.channel;
 
