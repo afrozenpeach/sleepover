@@ -8,8 +8,8 @@ module.exports = class Sleepover {
         this.lobbyChannel = null;
         this.doghouseChannel = null;
         this.overridePermissions = interaction.options.getBoolean('admins') ?? true;
-        this.announcement = interaction.options.getString('announcement') ?? 'The sleepover has started!';
         this.name = interaction.options.getString('name') ?? 'The Sleepover';
+        this.announcement = interaction.options.getString('announcement') ?? `${this.name} has started!`;
 
         this.startSleepover(interaction);
     }
