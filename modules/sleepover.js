@@ -86,8 +86,8 @@ module.exports = class Sleepover {
         let so = this;
 
         this.sleepoverCategory.children.create({
-            name: member.nickname ?? member.user.username,
-            reason: `${this.name} has started!`,
+            name: (member.nickname ?? member.user.username) + `'s Room`,
+            reason: `${member.nickname ?? member.user.username} has started a private room!`,
             type: ChannelType.GuildVoice
         }).then(c => {
             member.voice.setChannel(c);

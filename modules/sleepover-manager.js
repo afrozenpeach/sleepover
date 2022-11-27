@@ -1,3 +1,4 @@
+const { ChannelType } = require("discord.js");
 const Sleepover = require("./sleepover");
 
 module.exports = class SleepoverManager {
@@ -36,5 +37,25 @@ module.exports = class SleepoverManager {
         return this.sleepovers.filter(el => {
             return el.getGuild().id === guildId;
         })
+    }
+
+    async clean(interaction) {
+        let name = interaction.options.getString('name') ?? 'The Sleepover';
+
+        let categories = interaction.guild.channels.cache.filter(el => el.type === ChannelType.GuildCategory && el.name === name);
+
+        for (const p of categories) {
+            for (const c of p[1].children.cache) {
+                if (c[1].type === ChannelType.GuildVoice) {
+                    await c[1].delete();
+                }
+            }
+
+            if (p[1].children.cache.size === 0) {
+                await p[1].delete();
+            }
+        }
+
+        await interaction.editReply('Finished cleaning!');
     }
 }
