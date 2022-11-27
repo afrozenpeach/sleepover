@@ -1,0 +1,25 @@
+{
+  "name": "sleepover",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/afrozenpeach/sleepover.git"
+  },
+  "author": "Mattie Schraeder",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/afrozenpeach/sleepover/issues"
+  },
+  "homepage": "https://github.com/afrozenpeach/sleepover#readme",
+  "dependencies": {
+    "discord.js": "^14.6.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.28.0"
+  }
+}
