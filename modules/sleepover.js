@@ -6,6 +6,9 @@ module.exports = class Sleepover {
         this.announcementsChannel = interaction.channel;
         this.sleepoverCategory = null;
         this.lobbyChannel = null;
+        this.doghouseChannel = null;
+        this.overridePermissions = true;
+        this.name = 'Sleepover';
 
         this.startSleepover();
     }
@@ -18,7 +21,7 @@ module.exports = class Sleepover {
         let so = this;
 
         this.guild.channels.create({
-            name: 'Sleepover',
+            name: this.name,
             reason: 'The sleepover has started',
             type: ChannelType.GuildCategory
         }).then(soc => {
@@ -31,7 +34,17 @@ module.exports = class Sleepover {
             }).then(sol => {
                 so.lobbyChannel = sol;
 
-                so.announcementsChannel.send('The sleepover has started!');
+                so.sleepoverCategory.children.create({
+                    name: 'The Dog House',
+                    reason: 'The sleepover has started',
+                    type: ChannelType.GuildVoice
+                }).then(sod => {
+                    so.doghouseChannel = sod;
+
+                    so.doghouseChannel.permissionOverwrites.create(so.guild.roles.everyone, { 'Speak': false });
+
+                    so.announcementsChannel.send('The sleepover has started!');
+                })
             });
         }).catch(() => {
             so.announcementsChannel.send('The sleepover failed.');
@@ -58,6 +71,10 @@ module.exports = class Sleepover {
         return this.lobbyChannel;
     }
 
+    getDoghouseChannel() {
+        return this.doghouseChannel;
+    }
+
     createRoom(member) {
         this.sleepoverCategory.children.create({
             name: member.nickname ?? member.user.username,
@@ -66,7 +83,8 @@ module.exports = class Sleepover {
         }).then(c => {
             member.voice.setChannel(c);
 
-            c.permissionOverwrites.create(member, {ManageChannels: true});
+            c.permissionOverwrites.create(member, {'ManageChannels': true, 'MoveMembers': true});
+            this.doghouseChannel.permissionOverwrites.create(member, {'MoveMembers': true});
         })
     }
 }
