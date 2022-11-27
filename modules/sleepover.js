@@ -7,64 +7,67 @@ module.exports = class Sleepover {
         this.sleepoverCategory = null;
         this.lobbyChannel = null;
         this.doghouseChannel = null;
-        this.overridePermissions = true;
-        this.name = 'Sleepover';
+        this.overridePermissions = interaction.options.getBoolean('admins') ?? true;
+        this.announcement = interaction.options.getString('announcement') ?? 'The sleepover has started!';
+        this.name = interaction.options.getString('name') ?? 'The Sleepover';
 
-        this.startSleepover();
+        this.startSleepover(interaction);
     }
 
     getGuild() {
         return this.guild;
     }
 
-    startSleepover() {
+    startSleepover(interaction) {
         let so = this;
 
         this.guild.channels.create({
             name: this.name,
-            reason: 'The sleepover has started',
+            reason: `${this.name} has started`,
             type: ChannelType.GuildCategory
         }).then(soc => {
             so.sleepoverCategory = soc;
 
             so.sleepoverCategory.children.create({
                 name: 'The Lobby',
-                reason: 'The sleepover has started',
+                reason: `${this.name} has started!`,
                 type: ChannelType.GuildVoice
             }).then(sol => {
                 so.lobbyChannel = sol;
 
                 so.sleepoverCategory.children.create({
                     name: 'The Dog House',
-                    reason: 'The sleepover has started',
+                    reason: `${this.name} has started!`,
                     type: ChannelType.GuildVoice
-                }).then(sod => {
+                }).then(async sod => {
                     so.doghouseChannel = sod;
 
                     so.doghouseChannel.permissionOverwrites.create(so.guild.roles.everyone, { 'Speak': false });
 
-                    so.announcementsChannel.send('The sleepover has started!');
+                    so.announcementsChannel.send(so.announcement);
+
+                    await interaction.editReply(`${this.name} has started!`);
                 })
             });
-        }).catch(() => {
-            so.announcementsChannel.send('The sleepover failed.');
+        }).catch(async () => {
+            await interaction.editReply(`${this.name} failed to start!`);
         });
 
         return this;
     }
 
-    endSleepover() {
+    endSleepover(interaction) {
         let so = this;
 
-        this.guild.channels.delete(this.lobbyChannel, 'The sleepover has ended').then(async () => {
+        this.guild.channels.delete(this.lobbyChannel, `${this.name} has ended!`).then(async () => {
             so.sleepoverCategory.children.cache.forEach(async c => {
-                await c.delete('The sleepover has ended')
+                await c.delete(`${this.name} has ended!`)
             });
 
-            so.guild.channels.delete(this.sleepoverCategory, 'The sleepover has ended');
+            so.guild.channels.delete(this.sleepoverCategory, `${this.name} has ended!`);
         });
 
-        this.announcementsChannel.send('The sleepover has ended!');
+        interaction.editReply(`${this.name} has ended!`);
     }
 
     getLobbyChannel() {
@@ -75,16 +78,23 @@ module.exports = class Sleepover {
         return this.doghouseChannel;
     }
 
+    getName() {
+        return this.name;
+    }
+
     createRoom(member) {
+        let so = this;
+
         this.sleepoverCategory.children.create({
             name: member.nickname ?? member.user.username,
-            reason: 'The sleepover has started',
+            reason: `${this.name} has started!`,
             type: ChannelType.GuildVoice
         }).then(c => {
             member.voice.setChannel(c);
 
-            c.permissionOverwrites.create(member, {'ManageChannels': true, 'MoveMembers': true});
-            this.doghouseChannel.permissionOverwrites.create(member, {'MoveMembers': true});
+            c.permissionOverwrites.create(member, so.overridePermissions ? {'ManageChannels': true, 'MoveMembers': true} : {});
+
+            this.doghouseChannel.permissionOverwrites.create(member, so.overridePermissions ? {'MoveMembers': true} : {});
         })
     }
 }
