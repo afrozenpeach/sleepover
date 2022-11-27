@@ -92,7 +92,7 @@ module.exports = class Sleepover {
         }).then(c => {
             member.voice.setChannel(c);
 
-            c.permissionOverwrites.create(member, so.overridePermissions ? {'ManageChannels': true, 'MoveMembers': true} : {});
+            c.permissionOverwrites.create(member, so.overridePermissions ? {'ManageChannels': true, 'MoveMembers': true, 'ManageRoles': true} : {});
 
             this.doghouseChannel.permissionOverwrites.create(member, so.overridePermissions ? {'MoveMembers': true} : {});
         })
