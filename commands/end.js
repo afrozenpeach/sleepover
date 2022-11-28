@@ -17,7 +17,7 @@ module.exports = {
                 .setRequired(false)
         ),
 	async execute(interaction, sm) {
-		await interaction.reply({ content: `${interaction.options.getString('name') ?? 'sleepover'} is ending!`, ephemeral: true });
+		await interaction.reply({ content: `${interaction.options.getString('name') ?? 'The Sleepover'} is ending!`, ephemeral: true });
 
         sm.removeSleepover(interaction);
 	},
