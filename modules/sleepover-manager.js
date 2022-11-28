@@ -23,7 +23,7 @@ module.exports = class SleepoverManager {
 
     removeSleepover(interaction) {
         this.sleepovers = this.sleepovers.filter(el => {
-            if (el.getGuild().id === interaction.guild.id && (interaction.options.getString('name') ?? 'The Sleepover') === el.getName()) {
+            if (el.getGuild().id === interaction.guild.id && (interaction.options.getString('name') === el.getName() || interaction.options.getString('name') === null)) {
                 el.endSleepover(interaction);
 
                 return false;
