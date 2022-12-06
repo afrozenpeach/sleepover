@@ -10,7 +10,7 @@ When a user joins "The Lobby" a new voice chat is created, the user is moved to 
 
 ```
 {
-	"token": "Your Bot's Token",
+    "token": "Your Bot's Token",
     "clientId": "Your Bot's Client Id"
 }
 ```
