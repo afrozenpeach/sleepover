@@ -1,17 +1,18 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('clean')
 		.setDescription('Cleans up after the sleepover(s)!')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
-        .addStringOption(option =>
+        .addChannelOption(option =>
             option
-                .setName('name')
-                .setDescription('The name of the sleepover to clean up.')
+                .setName('channel')
+                .setDescription('The channel of the sleepover to clean up.')
                 .setRequired(true)
+                .addChannelTypes(ChannelType.GuildCategory)
         ),
 	async execute(interaction, sm) {
-		await interaction.reply({ content: `${interaction.options.getString('name') ?? 'sleepover'} is being cleaned!`, ephemeral: true });
+		await interaction.reply({ content: `${interaction.options.getChannel('channel').name} is being cleaned!`, ephemeral: true });
 
         sm.clean(interaction);
 	},

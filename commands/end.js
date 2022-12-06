@@ -1,14 +1,15 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('end')
 		.setDescription('Ends the sleepover(s)!')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
-        .addStringOption(option =>
+        .addChannelOption(option =>
             option
-                .setName('name')
-                .setDescription('The name of the sleepover to end.')
-                .setRequired(false)
+                .setName('channel')
+                .setDescription('The channel of the sleepover to end.')
+                .setRequired(true)
+                .addChannelTypes(ChannelType.GuildCategory)
         )
         .addIntegerOption(option =>
             option
@@ -17,7 +18,7 @@ module.exports = {
                 .setRequired(false)
         ),
 	async execute(interaction, sm) {
-		await interaction.reply({ content: `${interaction.options.getString('name') ?? 'The Sleepover'} is ending!`, ephemeral: true });
+		await interaction.reply({ content: `${interaction.options.getChannel('channel').name} is ending!`, ephemeral: true });
 
         sm.removeSleepover(interaction);
 	},

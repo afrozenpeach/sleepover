@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 // Require the necessary discord.js classes
-const { Client, Events, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');
+const { Client, Events, GatewayIntentBits, Collection, REST, Routes, AuditLogEvent, OverwriteType } = require('discord.js');
 const { token, clientId } = require('./config.json');
 const SleepoverManager = require('./modules/sleepover-manager');
 
@@ -33,6 +33,26 @@ for (const file of commandFiles) {
 // We use 'c' for the event parameter to keep it separate from the already defined 'client'
 client.once(Events.ClientReady, c => {
 	console.log(`Ready! Logged in as ${c.user.tag}`);
+
+    try {
+        fs.mkdirSync(path.join(__dirname, 'sleepovers'));
+    } catch (ex) {
+        console.log('Sleepover directory exists');
+    }
+
+    try {
+        const sleepovers = fs.readdirSync(path.join(__dirname, 'sleepovers')).filter(file => file.endsWith('.sleepover'));
+
+        for (const so of sleepovers) {
+            const filePath = path.join(__dirname, 'sleepovers', so);
+            const json = fs.readFileSync(filePath);
+            sm.loadSleepover(JSON.parse(json), c);
+        }
+
+        console.log('Sleepovers loaded.');
+    } catch (ex) {
+        console.log(`Error loading sleepovers: ${ex}`);
+    }
 
     for (const g of c.guilds.cache) {
         updateGuild(token, g[1], clientId, commands);
@@ -66,13 +86,29 @@ client.on(Events.VoiceStateUpdate, (oldState, newState) => {
 
         try {
             if (sleepovers.length > 0) {
-                sleepovers.forEach(s => {
+                sleepovers.forEach(async s => {
                     if (newState.channelId === s.getLobbyChannel().id) {
                         s.createRoom(newState.member);
-                    }
-
-                    if (oldState.channel?.permissionOverwrites.cache.filter(po => po.type === 1 && po.id === oldState.member.id && oldState.channelId !== s.getDoghouseChannel().id).size > 0) {
+                    } else if (oldState.channel?.permissionOverwrites.cache.filter(po => po.type === OverwriteType.Member && po.id === oldState.member.id && oldState.channelId !== s.getDoghouseChannel().id).size > 0) {
+                        //If the user is an admin of their own channel and they leave it
                         oldState.channel.delete();
+                    } else {
+                        //Did the channel have an admin?
+                        const po = oldState.channel?.permissionOverwrites.cache.filter(po => po.type === OverwriteType.Member);
+
+                        if (po?.size > 0) {
+                            //Find out if the user was moved by their channel admin
+                            const fetchedLogs = await oldState.guild.fetchAuditLogs({
+                                limit: 1,
+                                type: AuditLogEvent.MemberMove
+                            });
+
+                            const lastLog = fetchedLogs.entries.first();
+
+                            if (lastLog && po.map(o => o.id).includes(lastLog.executor.id) && lastLog.executor.id != oldState.member.id && newState.channelId === s.getDoghouseChannel().id) {
+                                s.report(lastLog.executor, oldState.member.user, oldState.channel);
+                            }
+                        }
                     }
                 });
             }
@@ -82,7 +118,7 @@ client.on(Events.VoiceStateUpdate, (oldState, newState) => {
     }
 });
 
-client.on("guildCreate", guild => {
+client.on(Events.GuildCreate, guild => {
     console.log("Joined a new guild: " + guild.name);
 
     updateGuild(token, guild, clientId, commands);

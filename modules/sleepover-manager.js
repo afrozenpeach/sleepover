@@ -23,7 +23,7 @@ module.exports = class SleepoverManager {
 
     removeSleepover(interaction) {
         this.sleepovers = this.sleepovers.filter(el => {
-            if (el.getGuild().id === interaction.guild.id && (interaction.options.getString('name') === el.getName() || interaction.options.getString('name') === null)) {
+            if (el.getGuild().id === interaction.guild.id && (interaction.options.getChannel('channel').id === el.getCategory().id)) {
                 el.endSleepover(interaction);
 
                 return false;
@@ -39,10 +39,14 @@ module.exports = class SleepoverManager {
         })
     }
 
-    async clean(interaction) {
-        let name = interaction.options.getString('name') ?? 'The Sleepover';
+    loadSleepover(so, client) {
+        this.sleepovers.push(new Sleepover(so, client));
+    }
 
-        let categories = interaction.guild.channels.cache.filter(el => el.type === ChannelType.GuildCategory && el.name === name);
+    async clean(interaction) {
+        let channel = interaction.options.getChannel('channel');
+
+        let categories = interaction.guild.channels.cache.filter(el => el.type === ChannelType.GuildCategory && el.id === channel.id);
 
         for (const p of categories) {
             for (const c of p[1].children.cache) {

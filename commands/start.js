@@ -1,8 +1,22 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('start')
 		.setDescription('Starts the sleepover!')
+        .addChannelOption(option =>
+            option
+                .setName('announcements')
+                .setDescription('The channel to send announcements to.')
+                .setRequired(true)
+                .addChannelTypes(ChannelType.GuildText)
+        )
+        .addChannelOption(option =>
+            option
+                .setName('report')
+                .setDescription('The channel to send reports.')
+                .setRequired(false)
+                .addChannelTypes(ChannelType.GuildText)
+        )
         .addStringOption(option =>
             option
                 .setName('name')

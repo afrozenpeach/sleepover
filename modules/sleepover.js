@@ -1,18 +1,35 @@
 const { ChannelType } = require("discord.js");
-
+const fs = require('fs');
+const path = require('path');
 module.exports = class Sleepover {
-    constructor(interaction) {
-        this.guild = interaction.guild;
-        this.announcementsChannel = interaction.channel;
-        this.sleepoverCategory = null;
-        this.lobbyChannel = null;
-        this.doghouseChannel = null;
-        this.overridePermissions = interaction.options.getBoolean('admins') ?? true;
-        this.name = interaction.options.getString('name') ?? 'The Sleepover';
-        this.announcement = interaction.options.getString('announcement') ?? `${this.name} has started!`;
-        this.closed = false;
+    constructor(interactionOrSleepover, client) {
+        if (client) {
+            //We're loading from a sleepover json file
+            this.guild = client.guilds.cache.filter(g => g.id === interactionOrSleepover.guild.id).first();
+            this.announcementsChannel = this.guild.channels.cache.filter(c => c.id === interactionOrSleepover.announcementsChannel.id).first();
+            this.sleepoverCategory = this.guild.channels.cache.filter(c => c.id === interactionOrSleepover.sleepoverCategory.id).first();
+            this.lobbyChannel = this.guild.channels.cache.filter(c => c.id === interactionOrSleepover.lobbyChannel.id).first();
+            this.doghouseChannel = this.guild.channels.cache.filter(c => c.id === interactionOrSleepover.doghouseChannel.id).first();
+            this.overridePermissions = interactionOrSleepover.overridePermissions;
+            this.name = interactionOrSleepover.name;
+            this.announcement = interactionOrSleepover.announcement;
+            this.reportChannel  = interactionOrSleepover.reportChannel ? this.guild.channels.cache.filter(c => c.id === interactionOrSleepover.reportChannel.id).first() : false;
+            this.closed = interactionOrSleepover.closed;
+        } else {
+            //We're creating a new sleepover
+            this.guild = interactionOrSleepover.guild;
+            this.announcementsChannel = interactionOrSleepover.options.getChannel('announcements');
+            this.sleepoverCategory = null;
+            this.lobbyChannel = null;
+            this.doghouseChannel = null;
+            this.overridePermissions = interactionOrSleepover.options.getBoolean('admins') ?? true;
+            this.name = interactionOrSleepover.options.getString('name') ?? 'The Sleepover';
+            this.announcement = interactionOrSleepover.options.getString('announcement') ?? `${this.name} has started!`;
+            this.reportChannel = interactionOrSleepover.options.getChannel('report') ?? false;
+            this.closed = false;
 
-        this.startSleepover(interaction);
+            this.startSleepover(interactionOrSleepover);
+        }
     }
 
     getGuild() {
@@ -43,9 +60,13 @@ module.exports = class Sleepover {
                 }).then(async sod => {
                     so.doghouseChannel = sod;
 
-                    so.doghouseChannel.permissionOverwrites.create(so.guild.roles.everyone, { 'Speak': false });
+                    so.doghouseChannel.permissionOverwrites.create(so.guild.roles.everyone, { 'Speak': false, 'Connect': false });
 
                     so.announcementsChannel.send(so.announcement);
+
+                    let json = JSON.stringify(this);
+
+                    fs.writeFileSync(path.join(__dirname, '..', 'sleepovers', so.guild.id + so.sleepoverCategory.id + '.sleepover'), json);
 
                     await interaction.editReply(`${this.name} has started!`);
                 })
@@ -57,21 +78,23 @@ module.exports = class Sleepover {
         return this;
     }
 
-    endSleepover(interaction) {
+    async endSleepover(interaction) {
         let so = this;
 
         so.closed = true;
 
         let timelimit = interaction.options.getInteger('timelimit') ?? 0;
 
-        so.guild.channels.delete(so.lobbyChannel, `${so.name} has ended!`);
+        await so.guild.channels.delete(so.lobbyChannel, `${so.name} has ended!`);
 
-        setTimeout(() => {
+        setTimeout(async () => {
             so.sleepoverCategory.children.cache.forEach(async c => {
                 await c.delete(`${so.name} has ended!`)
             });
 
-            so.guild.channels.delete(so.sleepoverCategory, `${so.name} has ended!`);
+            await so.guild.channels.delete(so.sleepoverCategory, `${so.name} has ended!`);
+
+            fs.unlinkSync(path.join(__dirname, '..', 'sleepovers', so.guild.id + so.sleepoverCategory.id + '.sleepover'));
         }, timelimit * 60 * 1000);
     }
 
@@ -85,6 +108,10 @@ module.exports = class Sleepover {
 
     getName() {
         return this.name;
+    }
+
+    getCategory() {
+        return this.sleepoverCategory;
     }
 
     createRoom(member) {
@@ -101,5 +128,11 @@ module.exports = class Sleepover {
 
             this.doghouseChannel.permissionOverwrites.create(member, so.overridePermissions ? {'MoveMembers': true} : {});
         });
+    }
+
+    report(executor, member, sourceChannel) {
+        if (this.reportChannel) {
+            this.reportChannel.send(executor.toString() + ' moved ' + member.toString() + ' from ' + sourceChannel.name)
+        }
     }
 }
