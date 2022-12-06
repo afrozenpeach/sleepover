@@ -62,7 +62,7 @@ module.exports = class Sleepover {
 
                     so.doghouseChannel.permissionOverwrites.create(so.guild.roles.everyone, { 'Speak': false, 'Connect': false });
 
-                    so.announcementsChannel.send(so.announcement);
+                    so.announcementsChannel?.send(so.announcement);
 
                     let json = JSON.stringify(this);
 

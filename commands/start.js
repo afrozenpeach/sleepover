@@ -7,7 +7,7 @@ module.exports = {
             option
                 .setName('announcements')
                 .setDescription('The channel to send announcements to.')
-                .setRequired(true)
+                .setRequired(false)
                 .addChannelTypes(ChannelType.GuildText)
         )
         .addChannelOption(option =>
