@@ -40,7 +40,11 @@ module.exports = class SleepoverManager {
     }
 
     loadSleepover(so, client) {
-        this.sleepovers.push(new Sleepover(so, client));
+        let s = new Sleepover(so, client);
+
+        if (!s.closed) {
+            this.sleepovers.push(s);
+        }
     }
 
     async clean(interaction) {
