@@ -25,6 +25,12 @@ module.exports = class Sleepover {
                 this.guild.channels.delete(this.sleepoverCategory, `${this.name} has ended!`);
 
                 fs.unlinkSync(path.join(__dirname, '..', 'sleepovers', this.guild.id + this.sleepoverCategory.id + '.sleepover'));
+            } else {
+                let so = this;
+
+                this.lobbyChannel.members.map(m => {
+                    so.createRoom(m);
+                })
             }
         } else {
             //We're creating a new sleepover
