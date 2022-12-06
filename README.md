@@ -2,7 +2,7 @@
 
 A Discord bot for managing ephemeral voice chats.
 
-When a user joins "The Lobby" a new voice chat is created, the user is moved to the new channel, and finally the user is made an admin of their channel. When the user who created the channel leaves, the channel is deleted. The admin user can move users from their own channel into "The Doghouse" if they are causing trouble. The admin user can also set their own permissions for that channel, rename it, set permissions for individual users/roles, and basically anything else an admin can usually take care of.
+When a user joins "The Lobby" a new voice chat is created, the user is moved to the new channel, and finally the user is made an admin of their channel. When the user who created the channel leaves, the channel is deleted. The admin user can move users from their own channel into "The Dog House" if they are causing trouble. The admin user can also set their own permissions for that channel, rename it, set permissions for individual users/roles, and basically anything else an admin can usually take care of.
 
 # Usage
 
